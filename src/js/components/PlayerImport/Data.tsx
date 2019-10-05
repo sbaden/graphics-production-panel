@@ -7,8 +7,6 @@ import {
     Card,
     CardContent,
     CardActions,
-    Tabs,
-    Tab,
     Typography,
     TextField,
     FormGroup,
@@ -23,7 +21,7 @@ import {
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 
-import ProfileContext from './ProfileContext';
+import PlayerContext from './PlayerContext';
 import Teams from './Teams';
 
 import ARI from '../img/ARI_alt.svg';
@@ -58,6 +56,7 @@ import SF from '../img/SF_alt.svg';
 import TB from '../img/TB_alt.svg';
 import TEN from '../img/TEN_alt.svg';
 import WAS from '../img/WAS_alt.svg';
+
 
 const drawerWidth = '90%';
 
@@ -113,10 +112,8 @@ const styles = theme => ({
 
 const Data = (props) => {
     const theme = useTheme();
-    const {profile} = useContext(ProfileContext);
+    const {profile} = useContext(PlayerContext);
 
-    const [dataType, setDataType] = useState(0);
-    const [dataPath, setDataPath] = useState('');
     const [open, setOpen] = useState(false);
     const [allTeamsToggle, setAllTeamsToggle] = useState(true);
     const [selectTeamColor, setSelectTeamColor] = useState('secondary');
@@ -156,19 +153,19 @@ const Data = (props) => {
         {tri: 'TEN',    id: '2100', logo: TEN},
         {tri: 'WAS',    id: '5110', logo: WAS},
     ];
-    
+
     const teamsAll = () => {
-      return teams.map(team => (team.id))
+        return teams.map(team => (team.id))
     }
 
     const selectAll = () => {
         setTeamCollection(teamsAll);
-        profile.data.teamCollection = teamsAll;
+        profile.teamCollection = teamsAll;
     }
 
     const selectNone = () => {
         setTeamCollection([]);
-        profile.data.teamCollection = [];
+        profile.teamCollection = [];
     }
 
     useEffect(() => {
@@ -176,13 +173,15 @@ const Data = (props) => {
     }, [teamCollection]);
 
     useEffect(() => {
-        allTeamsToggle ? profile.data.teamCollection = teamsAll() : profile.data.teamCollection = teamCollection;
-        profile.data.allTeams = allTeamsToggle;
+        if(allTeamsToggle){
+            setOpen(false);
+            profile.teamCollection = teamsAll()
+        }
+        else{
+            profile.teamCollection = selectNone();
+        }
+        profile.allTeams = allTeamsToggle;
     }, [allTeamsToggle]);
-
-    useEffect(() => {
-        dataType === 0 ? profile.data.dataType = 'csv' : profile.data.dataType = 'feed';
-    }, [dataType]);
 
     useEffect(() => {
         if(!open && teamCollection.length === 32){
@@ -190,41 +189,13 @@ const Data = (props) => {
         }
     }, [open]);
 
-    const handleTabChange = (event, tabValue) => {
-        setDataType(tabValue);
-        profile.data.dataType = tabValue;
-    }
-
-    const handleGetDataFile = () => {
-        if (inCEPEnvironment()) {
-            evalExtendscript(`returnFile()`)
-            .then(result => {
-                result === undefined ? setDataPath('') : setDataPath(result);
-                profile.data.dataPath = result;
-            });
-        }
-        else{
-            setDataPath('No path is available outside the CEP Environment');
-            profile.data.dataPath = 'No path is available outside the CEP Environment';
-        }
-    }
-
     const handleAllTeamsToggle = () => {
         setAllTeamsToggle(!allTeamsToggle);
-
-        if (allTeamsToggle === true) {
-            setOpen(false);
-        }
-        else{
-            selectNone();
-        }
     }
-
 
     let selectTeamsNode;
 
     if (allTeamsToggle === false) {
-
         selectTeamsNode = (
             <CardActions>
                 <Button
@@ -240,60 +211,23 @@ const Data = (props) => {
         );
     }
 
+    let getPlayersNode;
 
-    let dataNode;
-
-    switch(dataType){
-        case 0:
-            dataNode =
-                <div>
-                    <TextField
-                        required
-                        multiline
-                        error={dataPath === ''}
-                        label="Select Data File"
-                        className={props.classes.textField}
-                        value={dataPath}
-                        onClick={handleGetDataFile}
-                        margin="dense"
-                    >
-                    </TextField>
-                </div>
-            break;
-
-        case 1:
-            dataNode =
-                <CardActions>
-                    <FormControl>
-                        <FormGroup row>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        className={props.classes.switch}
-                                        color="primary"
-                                        size="small"
-                                        checked={allTeamsToggle}
-                                        onChange={handleAllTeamsToggle}
-                                        value="allTeamsToggle"
-                                    />
-                                }
-                                label="All Teams"
-                                />
-                            {selectTeamsNode}
-                        </FormGroup>
-                    </FormControl>
-                </CardActions>
-            break;
-        
-        case 'googleSheets':
-            // FUTURE CODE
-            break;
-
-        default:
-            break;
+    if(teamCollection.length > 0){
+        getPlayersNode = (
+            <Button 
+                variant="contained"
+                type="submit"
+                size="small"
+                color="primary"
+                className={props.classes.button}
+                // onClick={handleImport}
+            >
+                Get Players
+            </Button>
+        );
     }
 
-  
     return (
         <div>
             <Drawer
@@ -313,6 +247,7 @@ const Data = (props) => {
                             <ChevronRightIcon />
                         )}
                     </IconButton>
+                    {getPlayersNode}
                 </div>
                 <Divider />
                 <div className={props.classes.drawerButtons}>
@@ -339,26 +274,31 @@ const Data = (props) => {
                     setTeamCollection={setTeamCollection}
                 />
             </Drawer>
-        
             <Card className={props.classes.card}>
                 <CardContent>
                     <Typography className={props.classes.title}>
-                        Data
+                        Get Player Data
                     </Typography>
-                    <Tabs
-                        className={props.classes.tabs}
-                        value={dataType}
-                        onChange={handleTabChange}
-                        indicatorColor="primary"
-                        textColor="primary"
-                        centered
-                        >
-                        <Tab label="File" />
-                        <Tab label="Feed" />
-                        {/* <Tab label="GS" disabled/> */}
-                    </Tabs>
-                    <Divider className={props.classes.divider}/>
-                    {dataNode}
+                    <CardActions>
+                        <FormControl>
+                            <FormGroup row>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            className={props.classes.switch}
+                                            color="primary"
+                                            size="small"
+                                            checked={allTeamsToggle}
+                                            onChange={handleAllTeamsToggle}
+                                            value="allTeamsToggle"
+                                        />
+                                    }
+                                    label="All Teams"
+                                    />
+                                {selectTeamsNode}
+                            </FormGroup>
+                        </FormControl>
+                    </CardActions>
                 </CardContent>
             </Card>
         </div>
@@ -366,7 +306,7 @@ const Data = (props) => {
 }
 
 Data.propTypes = {
-    classes: PropTypes.object.isRequired,
+  classes: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(Data);

@@ -18,9 +18,9 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import MenuIcon from '@material-ui/icons/Menu';
 import InfoIcon from '@material-ui/icons/Info';
 
-import Workflow2 from '../containers/Workflow2';
-import Workflow3 from '../containers/Workflow3';
 import IntVersionControl from './IntVersionControl';
+import PlayerImport from '../containers/PlayerImport';
+import Workflow3 from '../containers/Workflow3';
 
 import MenuList from '../components/MenuList';
 import InfoDialog from '../components/InfoDialog';
@@ -93,8 +93,8 @@ const styles = theme => ({
 const PersistentDrawerLeft = (props) => {
 
   const [open, setOpen] = useState(false);
-  const [menuState, setMenuState] = useState('Interstitial Batching');
-  const [menuItems] = useState([ 'Interstitial Batching', 'Workflow 2', 'Workflow 3' ]);
+  const [menuState, setMenuState] = useState('Player Import');
+  const [menuItems] = useState([ 'Interstitial Batching', 'Player Import', 'Workflow 3' ]);
   const [openInfo, setOpenInfo] = useState(false);
   const [infoTitle, setInfoTitle] = useState('');
   const [infoMessage, setInfoMessage] = useState('');
@@ -104,19 +104,19 @@ const PersistentDrawerLeft = (props) => {
       case menuItems[0]:
           setInfoTitle('Workflow: Interstitial Batching');
           setInfoMessage('Requirements:\n' +
-          '\t- Requirements/notes will be displayed here.')
+          '\t- Requirements/Notes will be displayed here.')
         break;
   
       case menuItems[1]:
-          setInfoTitle('Workflow: Workflow 2');
+          setInfoTitle('Workflow: Player Import');
           setInfoMessage('Requirements:\n' +
-          '\t- Requirements/notes will be displayed here.')
+          '\t- Requirements/Notes will be displayed here.')
         break;
   
       case menuItems[2]:
           setInfoTitle('Workflow: Workflow 3');
           setInfoMessage('Requirements:\n' +
-          '\t- Requirements/notes will be displayed here.')
+          '\t- Requirements/Notes will be displayed here.')
         break;
   
       default:
@@ -142,7 +142,7 @@ const PersistentDrawerLeft = (props) => {
 
     case menuItems[1]:
       menuNode =
-        <Workflow2 />
+        <PlayerImport />
       break;
 
     case menuItems[2]:
