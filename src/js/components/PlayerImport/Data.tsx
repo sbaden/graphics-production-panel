@@ -8,11 +8,8 @@ import {
     CardContent,
     CardActions,
     Typography,
-    TextField,
     FormGroup,
     FormControl,
-    FormControlLabel,
-    Switch,
     Button,
     IconButton,
     Drawer,
@@ -23,6 +20,7 @@ import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 
 import PlayerContext from './PlayerContext';
 import Teams from './Teams';
+import Players from './Players';
 
 import ARI from '../img/ARI_alt.svg';
 import ATL from '../img/ATL_alt.svg';
@@ -58,7 +56,7 @@ import TEN from '../img/TEN_alt.svg';
 import WAS from '../img/WAS_alt.svg';
 
 
-const drawerWidth = '90%';
+const drawerWidth = '95%';
 
 const styles = theme => ({
     card: {
@@ -115,9 +113,9 @@ const Data = (props) => {
     const {profile} = useContext(PlayerContext);
 
     const [open, setOpen] = useState(false);
-    const [allTeamsToggle, setAllTeamsToggle] = useState(true);
     const [selectTeamColor, setSelectTeamColor] = useState('secondary');
     const [teamCollection, setTeamCollection] = useState([]);
+    const [playerCollection, setPlayerCollection] = useState([]);
 
     let teams = [
         {tri: 'ARI',    id: '3800', logo: ARI},
@@ -172,41 +170,72 @@ const Data = (props) => {
         teamCollection.length < 1 ? setSelectTeamColor('secondary') : setSelectTeamColor('primary');
     }, [teamCollection]);
 
-    useEffect(() => {
-        if(allTeamsToggle){
-            setOpen(false);
-            profile.teamCollection = teamsAll()
+    const handleCloseDrawer = () => {
+        setOpen(false)
+        if(playerCollection < 1){
+            setTeamCollection([]);
         }
-        else{
-            profile.teamCollection = selectNone();
-        }
-        profile.allTeams = allTeamsToggle;
-    }, [allTeamsToggle]);
-
-    useEffect(() => {
-        if(!open && teamCollection.length === 32){
-            setAllTeamsToggle(true);
-        }
-    }, [open]);
-
-    const handleAllTeamsToggle = () => {
-        setAllTeamsToggle(!allTeamsToggle);
     }
 
-    let selectTeamsNode;
+    const handleSelectPlayers = () => {
+        setOpen(true);
+        setTeamCollection([]);
+        setPlayerCollection([]);
+    }
 
-    if (allTeamsToggle === false) {
-        selectTeamsNode = (
+    const handleGetPlayers = () => {
+        const rosterURL = "http://feeds.nfl.com/feeds-rs/roster/";
+        const headshotURL = "http://www.nfl.com/static/content/public/static/img/fantasy/transparent/512x512/";
+        let collection = [];
+        setPlayerCollection(collection);
+        
+        teamCollection.map(team => (
+            fetch(rosterURL + team + '.json')
+            .then(response => response.json())
+            .then(roster => {
+                processPlayerNames(roster, collection);
+            })
+        ));        
+
+        const processPlayerNames = (roster, collection) => {
+            let players = roster.teamPlayers;
+            
+            for(let i=0; i<players.length; i++){
+                let newPlayer = {
+                    name: {
+                        first: players[i].firstName,
+                        last: players[i].lastName,
+                    },
+                    status: players[i].status,
+                    id: players[i].esbId,
+                    pos: players[i].position,
+                    team: players[i].teamFullName
+                };
+                if (newPlayer.status === "ACT"){ // ACT = ACTIVE,  RES = INJURED/RESERVE,
+                    collection.push(newPlayer);
+                }
+            }
+        }
+    }
+
+
+    let clearPlayerNode;
+
+    if (teamCollection.length > 0) {
+        clearPlayerNode = (
             <CardActions>
                 <Button
                     color={selectTeamColor}
                     aria-label="open drawer"
                     edge="end"
-                    onClick={() => setOpen(true)}
+                    onClick={() => {
+                        setTeamCollection([])
+                        setPlayerCollection([])
+                        }
+                    }
                 >
-                    Select Teams *
+                    Clear
                 </Button>
-                <div className={props.classes.teamCount}>{teamCollection.length}</div>
             </CardActions>
         );
     }
@@ -221,12 +250,22 @@ const Data = (props) => {
                 size="small"
                 color="primary"
                 className={props.classes.button}
-                // onClick={handleImport}
+                onClick={handleGetPlayers}
             >
                 Get Players
             </Button>
         );
     }
+
+    // let playerNode;
+
+    // if(playerCollection.length > 0){
+    //     playerNode =(
+    //         <Players
+    //             players={playerCollection}
+    //         />
+    //     )
+    // }
 
     return (
         <div>
@@ -240,7 +279,7 @@ const Data = (props) => {
                 }}
             >
                 <div className={props.classes.drawerHeader}>
-                    <IconButton onClick={() => setOpen(false)}>
+                    <IconButton onClick={handleCloseDrawer}>
                         {theme.direction === "rtl" ? (
                             <ChevronLeftIcon />
                         ) : (
@@ -282,20 +321,21 @@ const Data = (props) => {
                     <CardActions>
                         <FormControl>
                             <FormGroup row>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            className={props.classes.switch}
-                                            color="primary"
-                                            size="small"
-                                            checked={allTeamsToggle}
-                                            onChange={handleAllTeamsToggle}
-                                            value="allTeamsToggle"
-                                        />
-                                    }
-                                    label="All Teams"
-                                    />
-                                {selectTeamsNode}
+                                <CardActions>
+                                    <Button
+                                        color={selectTeamColor}
+                                        aria-label="open drawer"
+                                        edge="end"
+                                        onClick={handleSelectPlayers}
+                                    >
+                                        Select Players *
+                                    </Button>
+                                    <div className={props.classes.teamCount}>{playerCollection.length}</div>
+                                    {clearPlayerNode}
+                                </CardActions>
+                                <div>
+                                    {/* {playerNode} */}
+                                </div>
                             </FormGroup>
                         </FormControl>
                     </CardActions>

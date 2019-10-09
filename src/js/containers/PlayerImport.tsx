@@ -27,6 +27,7 @@ const profile = {
   feedRepo: '/Users/sbaden/Documents/development_AE/JSON_TEAM_REPO/',
   allTeams: true,
   teamCollection: [],
+  playerCollection: [],
 };
 
 
@@ -34,6 +35,7 @@ const PlayerImport = (props) => {
 
   const handleImport = () => {
     console.log('Import clicked');
+    alert(profile.playerCollection.length);
   }
 
   return (

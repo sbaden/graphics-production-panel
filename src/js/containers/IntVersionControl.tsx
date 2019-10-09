@@ -16,13 +16,7 @@ import Render from '../components/IntVersionControl/Render';
 import Manager from '../components/IntVersionControl/Manager';
 
 ////  IF loadExtendscript DOESN'T WORK:
-////    1) STOP SERVER IF RUNNING && QUIT AE
-////    2) COMMENT OUT loadExtendscript() LINE
-////    3) START SERVER
-////    4) START AE
-////    5) UNCOMMENT loadExtendscript() LINE
-////    6) DO NOT REFRESH SERVER
-////    7) REFRESH AE PANEL IF NEEDED
+////    START SERVER FOR BOTH RENDER-MANAGER AND GRAPHICS-PRODUCTION-PANEL
 loadExtendscript('index.jsx');
 
 const styles = theme => ({

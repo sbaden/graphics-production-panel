@@ -59,7 +59,7 @@ import TB from '../img/TB_alt.svg';
 import TEN from '../img/TEN_alt.svg';
 import WAS from '../img/WAS_alt.svg';
 
-const drawerWidth = '90%';
+const drawerWidth = '95%';
 
 const styles = theme => ({
     card: {
