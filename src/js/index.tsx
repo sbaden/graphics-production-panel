@@ -6,13 +6,6 @@ import { lightBlue, orange, grey } from '@material-ui/core/colors';
 import App from "./containers/App";
 import "./index.css";
 
-// import { loadExtendscript } from "cep-interface";
-// loadExtendscript('index.jsx');
-
-// if (inCEPEnvironment()) {
-//   import("./extendscript");
-// }
-
 const theme = createMuiTheme({
   palette: {
     primary: {

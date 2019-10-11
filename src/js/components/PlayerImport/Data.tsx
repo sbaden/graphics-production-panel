@@ -184,35 +184,47 @@ const Data = (props) => {
     }
 
     const handleGetPlayers = () => {
-        const rosterURL = "http://feeds.nfl.com/feeds-rs/roster/";
-        const headshotURL = "http://www.nfl.com/static/content/public/static/img/fantasy/transparent/512x512/";
-        let collection = [];
-        setPlayerCollection(collection);
+        const rosterURL =   "http://feeds.nfl.com/feeds-rs/roster/";
+        const headshotURL = "http://www.nfl.com/static/content/public/static/img/fantasy/transparent/1400x1000/";
         
         teamCollection.map(team => (
             fetch(rosterURL + team + '.json')
             .then(response => response.json())
             .then(roster => {
-                processPlayerNames(roster, collection);
+                collectPlayers(roster);
             })
-        ));        
-
-        const processPlayerNames = (roster, collection) => {
+        ));
+        
+        const collectPlayers = (roster) => {
+            const firstCount = 7;
+            const lastCount = 8;
             let players = roster.teamPlayers;
+            let foundPlayer = false;
+            let count = 0;
             
-            for(let i=0; i<players.length; i++){
-                let newPlayer = {
-                    name: {
-                        first: players[i].firstName,
-                        last: players[i].lastName,
-                    },
-                    status: players[i].status,
-                    id: players[i].esbId,
-                    pos: players[i].position,
-                    team: players[i].teamFullName
-                };
-                if (newPlayer.status === "ACT"){ // ACT = ACTIVE,  RES = INJURED/RESERVE,
-                    collection.push(newPlayer);
+            while(!foundPlayer){
+                for(let i=0; i<players.length; i++){
+                    let player = players[i];
+                    
+                    if(player.firstName.length === firstCount - count && player.lastName.length === lastCount && player.status === 'ACT'){
+                        let newPlayer = {
+                            status: player.status,
+                            headshot: headshotURL + player.esbId + '.png',
+                            name: {
+                                last: player.lastName,
+                                first: player.firstName,
+                            },
+                            pos: player.position,
+                            number: player.jerseyNumber,
+                            team: roster.team.abbr,
+                        };
+                        setPlayerCollection(playerCollection => [...playerCollection, newPlayer]);
+                        foundPlayer = true;
+                        return;
+                    }
+                }
+                if(!foundPlayer){
+                    count++;
                 }
             }
         }
@@ -257,15 +269,15 @@ const Data = (props) => {
         );
     }
 
-    // let playerNode;
+    let playerNode;
 
-    // if(playerCollection.length > 0){
-    //     playerNode =(
-    //         <Players
-    //             players={playerCollection}
-    //         />
-    //     )
-    // }
+    if(playerCollection.length > 0){
+        playerNode =(
+            <Players
+                players={playerCollection}
+            />
+        )
+    }
 
     return (
         <div>
@@ -334,7 +346,7 @@ const Data = (props) => {
                                     {clearPlayerNode}
                                 </CardActions>
                                 <div>
-                                    {/* {playerNode} */}
+                                    {playerNode}
                                 </div>
                             </FormGroup>
                         </FormControl>
